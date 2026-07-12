@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 
 import { InquiryStatusBadge } from "@/components/inquiries/inquiry-status-badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -28,11 +31,19 @@ export default async function InquiriesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Inquiries</h1>
-        <p className="text-sm text-muted-foreground">
-          Incoming customer inquiries from all channels.
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Inquiries</h1>
+          <p className="text-sm text-muted-foreground">
+            Incoming customer inquiries from all channels.
+          </p>
+        </div>
+        <Button asChild>
+          <Link href="/inquiries/new">
+            <Plus className="size-4" />
+            New inquiry
+          </Link>
+        </Button>
       </div>
 
       <Card>
@@ -64,7 +75,12 @@ export default async function InquiriesPage() {
                 {inquiries.map((inquiry) => (
                   <TableRow key={inquiry.id}>
                     <TableCell className="font-medium">
-                      {inquiry.subject}
+                      <Link
+                        href={`/inquiries/${inquiry.id}`}
+                        className="hover:underline"
+                      >
+                        {inquiry.subject}
+                      </Link>
                     </TableCell>
                     <TableCell>
                       {inquiry.contacts ? (

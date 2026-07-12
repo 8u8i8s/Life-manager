@@ -15,3 +15,21 @@ export async function getContacts(): Promise<Tables<"contacts">[]> {
 
   return data;
 }
+
+export async function getContactById(
+  id: string
+): Promise<Tables<"contacts"> | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("contacts")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to load contact: ${error.message}`);
+  }
+
+  return data;
+}
