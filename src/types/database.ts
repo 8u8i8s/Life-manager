@@ -20,6 +20,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          ingest_token: string
           name: string
           phone: string | null
           slug: string
@@ -30,6 +31,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          ingest_token?: string
           name: string
           phone?: string | null
           slug: string
@@ -40,6 +42,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          ingest_token?: string
           name?: string
           phone?: string | null
           slug?: string
@@ -106,6 +109,7 @@ export type Database = {
       }
       inquiries: {
         Row: {
+          ai_reply_draft: string | null
           ai_summary: string | null
           assigned_to: string | null
           company_id: string
@@ -121,6 +125,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_reply_draft?: string | null
           ai_summary?: string | null
           assigned_to?: string | null
           company_id: string
@@ -136,6 +141,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_reply_draft?: string | null
           ai_summary?: string | null
           assigned_to?: string | null
           company_id?: string

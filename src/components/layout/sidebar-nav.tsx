@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Inbox, LayoutDashboard, Users } from "lucide-react";
+import { Inbox, LayoutDashboard, Settings, Users } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -10,6 +10,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/inquiries", label: "Inquiries", icon: Inbox },
   { href: "/contacts", label: "Contacts", icon: Users },
+  { href: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {

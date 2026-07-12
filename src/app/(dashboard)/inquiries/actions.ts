@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { FunctionsHttpError } from "@supabase/supabase-js";
+import { z } from "zod";
 
 import { getCurrentUserContext } from "@/lib/data/profile";
 import { createClient } from "@/lib/supabase/server";
@@ -105,6 +107,54 @@ export async function assignInquiry(
 
   revalidatePath(`/inquiries/${id}`);
   revalidatePath("/inquiries");
+  return { error: null };
+}
+
+export async function generateReplyDraft(
+  id: string
+): Promise<{ error: string | null; draft?: string }> {
+  const parsed = z.uuid().safeParse(id);
+  if (!parsed.success) {
+    return { error: "Invalid inquiry id." };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.functions.invoke("generate-reply", {
+    body: { inquiry_id: parsed.data },
+  });
+
+  if (error) {
+    if (error instanceof FunctionsHttpError) {
+      const body = await error.context.json().catch(() => null);
+      return { error: body?.error ?? "Reply generation failed." };
+    }
+    return { error: "Reply generation failed. Try again." };
+  }
+
+  revalidatePath(`/inquiries/${id}`);
+  return { error: null, draft: data.draft };
+}
+
+export async function updateReplyDraft(
+  id: string,
+  draft: string
+): Promise<{ error: string | null }> {
+  const parsed = z.uuid().safeParse(id);
+  if (!parsed.success) {
+    return { error: "Invalid inquiry id." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("inquiries")
+    .update({ ai_reply_draft: draft })
+    .eq("id", parsed.data);
+
+  if (error) {
+    return { error: `Failed to save draft: ${error.message}` };
+  }
+
+  revalidatePath(`/inquiries/${id}`);
   return { error: null };
 }
 

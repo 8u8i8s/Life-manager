@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { deleteInquiry } from "@/app/(dashboard)/inquiries/actions";
 import { InquiryAssigneeSelect } from "@/components/inquiries/inquiry-assignee-select";
+import { InquiryReplyCard } from "@/components/inquiries/inquiry-reply-card";
 import { InquiryStatusSelect } from "@/components/inquiries/inquiry-status-select";
 import { DeleteButton } from "@/components/shared/delete-button";
 import { Button } from "@/components/ui/button";
@@ -121,6 +122,11 @@ export default async function InquiryDetailPage({
               </CardContent>
             </Card>
           ) : null}
+
+          <InquiryReplyCard
+            inquiryId={inquiry.id}
+            initialDraft={inquiry.ai_reply_draft}
+          />
         </div>
 
         <Card className="h-fit">
