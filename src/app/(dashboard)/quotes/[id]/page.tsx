@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Pencil } from "lucide-react";
 
 import { deleteQuote } from "@/app/(dashboard)/quotes/actions";
+import { ConvertQuoteButton } from "@/components/orders/convert-quote-button";
 import { QuoteStatusSelect } from "@/components/quotes/quote-status-select";
 import { DeleteButton } from "@/components/shared/delete-button";
 import { Button } from "@/components/ui/button";
@@ -72,6 +73,9 @@ export default async function QuoteDetailPage({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {quote.status !== "rejected" && quote.status !== "expired" ? (
+            <ConvertQuoteButton quoteId={quote.id} />
+          ) : null}
           <QuoteStatusSelect quoteId={quote.id} status={quote.status} />
           <Button asChild variant="outline" size="sm">
             <Link href={`/quotes/${quote.id}/edit`}>
