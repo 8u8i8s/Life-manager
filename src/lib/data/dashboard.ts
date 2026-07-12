@@ -5,6 +5,7 @@ export type DashboardStats = {
   totalInquiries: number;
   newInquiries: number;
   totalContacts: number;
+  openQuotes: number;
 };
 
 export type RecentInquiry = Pick<
@@ -15,19 +16,25 @@ export type RecentInquiry = Pick<
 export async function getDashboardStats(): Promise<DashboardStats> {
   const supabase = await createClient();
 
-  const [totalInquiries, newInquiries, totalContacts] = await Promise.all([
-    supabase.from("inquiries").select("id", { count: "exact", head: true }),
-    supabase
-      .from("inquiries")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "new"),
-    supabase.from("contacts").select("id", { count: "exact", head: true }),
-  ]);
+  const [totalInquiries, newInquiries, totalContacts, openQuotes] =
+    await Promise.all([
+      supabase.from("inquiries").select("id", { count: "exact", head: true }),
+      supabase
+        .from("inquiries")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "new"),
+      supabase.from("contacts").select("id", { count: "exact", head: true }),
+      supabase
+        .from("quotes")
+        .select("id", { count: "exact", head: true })
+        .in("status", ["draft", "sent"]),
+    ]);
 
   return {
     totalInquiries: totalInquiries.count ?? 0,
     newInquiries: newInquiries.count ?? 0,
     totalContacts: totalContacts.count ?? 0,
+    openQuotes: openQuotes.count ?? 0,
   };
 }
 

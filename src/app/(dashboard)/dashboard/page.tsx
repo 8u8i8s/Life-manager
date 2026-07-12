@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Inbox, MailPlus, Users } from "lucide-react";
+import { FileText, Inbox, MailPlus, Users } from "lucide-react";
 
 import { InquiryStatusBadge } from "@/components/inquiries/inquiry-status-badge";
 import {
@@ -47,6 +47,11 @@ export default async function DashboardPage() {
       value: stats.totalContacts,
       icon: Users,
     },
+    {
+      label: "Open quotes",
+      value: stats.openQuotes,
+      icon: FileText,
+    },
   ] as const;
 
   return (
@@ -58,7 +63,7 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map(({ label, value, icon: Icon }) => (
           <Card key={label}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
