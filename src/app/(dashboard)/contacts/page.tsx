@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -27,11 +30,19 @@ export default async function ContactsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Contacts</h1>
-        <p className="text-sm text-muted-foreground">
-          Customers and partners of your company.
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Contacts</h1>
+          <p className="text-sm text-muted-foreground">
+            Customers and partners of your company.
+          </p>
+        </div>
+        <Button asChild>
+          <Link href="/contacts/new">
+            <Plus className="size-4" />
+            New contact
+          </Link>
+        </Button>
       </div>
 
       <Card>
@@ -63,7 +74,12 @@ export default async function ContactsPage() {
                 {contacts.map((contact) => (
                   <TableRow key={contact.id}>
                     <TableCell className="font-medium">
-                      {contact.full_name}
+                      <Link
+                        href={`/contacts/${contact.id}/edit`}
+                        className="hover:underline"
+                      >
+                        {contact.full_name}
+                      </Link>
                     </TableCell>
                     <TableCell>{contact.email ?? "—"}</TableCell>
                     <TableCell>{contact.phone ?? "—"}</TableCell>
