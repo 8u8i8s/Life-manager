@@ -28,6 +28,12 @@ pnpm start &        # production server on http://localhost:3000
   `+tag` alias of a real domain. Email confirmation is ON, so `signUp`
   returns no session; confirm the test user via SQL:
   `update auth.users set email_confirmed_at = now() where email = ...`
+- Supabase's built-in mailer allows ~3 emails/hour — repeated signups fail
+  with "email rate limit exceeded". Workaround: seed the user directly via
+  SQL (insert into `auth.users` with `crypt(password, gen_salt('bf'))` +
+  matching `auth.identities` row with provider `email`); the
+  `handle_new_user` trigger still creates the company + profile, and
+  password login through the UI works.
 - The `handle_new_user` trigger must create a `companies` row (when
   `company_name` metadata is present) and a `profiles` row with role `owner`.
 - Then sign in at `/login` → lands on `/dashboard`.
