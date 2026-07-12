@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 
 import { deleteInquiry } from "@/app/(dashboard)/inquiries/actions";
 import { InquiryAssigneeSelect } from "@/components/inquiries/inquiry-assignee-select";
@@ -65,6 +65,12 @@ export default async function InquiryDetailPage({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/quotes/new?inquiry=${inquiry.id}`}>
+              <FileText className="size-4" />
+              Create quote
+            </Link>
+          </Button>
           <InquiryStatusSelect
             inquiryId={inquiry.id}
             status={inquiry.status}

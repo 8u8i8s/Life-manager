@@ -218,12 +218,141 @@ export type Database = {
           },
         ]
       }
+      quote_items: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string
+          id: string
+          position: number
+          quantity: number
+          quote_id: string
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description: string
+          id?: string
+          position?: number
+          quantity?: number
+          quote_id: string
+          unit_price?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          position?: number
+          quantity?: number
+          quote_id?: string
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotes: {
+        Row: {
+          company_id: string
+          contact_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          id: string
+          inquiry_id: string | null
+          notes: string | null
+          quote_number: string
+          status: Database["public"]["Enums"]["quote_status"]
+          updated_at: string
+          valid_until: string | null
+          vat_rate: number
+        }
+        Insert: {
+          company_id: string
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          inquiry_id?: string | null
+          notes?: string | null
+          quote_number: string
+          status?: Database["public"]["Enums"]["quote_status"]
+          updated_at?: string
+          valid_until?: string | null
+          vat_rate?: number
+        }
+        Update: {
+          company_id?: string
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          inquiry_id?: string | null
+          notes?: string | null
+          quote_number?: string
+          status?: Database["public"]["Enums"]["quote_status"]
+          updated_at?: string
+          valid_until?: string | null
+          vat_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_inquiry_id_fkey"
+            columns: ["inquiry_id"]
+            isOneToOne: false
+            referencedRelation: "inquiries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       current_company_id: { Args: never; Returns: string }
+      next_quote_number: { Args: { p_company_id: string }; Returns: string }
     }
     Enums: {
       inquiry_source: "email" | "manual" | "web" | "api"
@@ -234,6 +363,7 @@ export type Database = {
         | "quoted"
         | "replied"
         | "closed"
+      quote_status: "draft" | "sent" | "accepted" | "rejected" | "expired"
       user_role: "owner" | "admin" | "member"
     }
     CompositeTypes: {
@@ -371,6 +501,7 @@ export const Constants = {
         "replied",
         "closed",
       ],
+      quote_status: ["draft", "sent", "accepted", "rejected", "expired"],
       user_role: ["owner", "admin", "member"],
     },
   },
