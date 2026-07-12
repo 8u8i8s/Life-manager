@@ -6,6 +6,7 @@ import {
   FileText,
   Inbox,
   LayoutDashboard,
+  Package,
   Settings,
   Users,
 } from "lucide-react";
@@ -16,6 +17,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/inquiries", label: "Inquiries", icon: Inbox },
   { href: "/quotes", label: "Quotes", icon: FileText },
+  { href: "/orders", label: "Orders", icon: Package },
   { href: "/contacts", label: "Contacts", icon: Users },
   { href: "/settings", label: "Settings", icon: Settings },
 ] as const;

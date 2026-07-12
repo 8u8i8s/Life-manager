@@ -218,6 +218,83 @@ export type Database = {
           },
         ]
       }
+      orders: {
+        Row: {
+          company_id: string
+          contact_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          delivery_date: string | null
+          id: string
+          notes: string | null
+          order_number: string
+          quote_id: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          delivery_date?: string | null
+          id?: string
+          notes?: string | null
+          order_number: string
+          quote_id?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          delivery_date?: string | null
+          id?: string
+          notes?: string | null
+          order_number?: string
+          quote_id?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_items: {
         Row: {
           company_id: string
@@ -352,6 +429,7 @@ export type Database = {
     }
     Functions: {
       current_company_id: { Args: never; Returns: string }
+      next_order_number: { Args: { p_company_id: string }; Returns: string }
       next_quote_number: { Args: { p_company_id: string }; Returns: string }
     }
     Enums: {
@@ -363,6 +441,12 @@ export type Database = {
         | "quoted"
         | "replied"
         | "closed"
+      order_status:
+        | "confirmed"
+        | "in_production"
+        | "ready"
+        | "delivered"
+        | "cancelled"
       quote_status: "draft" | "sent" | "accepted" | "rejected" | "expired"
       user_role: "owner" | "admin" | "member"
     }
@@ -500,6 +584,13 @@ export const Constants = {
         "quoted",
         "replied",
         "closed",
+      ],
+      order_status: [
+        "confirmed",
+        "in_production",
+        "ready",
+        "delivered",
+        "cancelled",
       ],
       quote_status: ["draft", "sent", "accepted", "rejected", "expired"],
       user_role: ["owner", "admin", "member"],
