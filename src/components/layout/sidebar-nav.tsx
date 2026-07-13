@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  ChartColumn,
   FileText,
   Inbox,
   LayoutDashboard,
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/orders", label: "Orders", icon: Package },
   { href: "/contacts", label: "Contacts", icon: Users },
   { href: "/chat", label: "AI Chat", icon: Sparkles },
+  { href: "/analytics", label: "Analytics", icon: ChartColumn },
   { href: "/settings", label: "Settings", icon: Settings },
 ] as const;
 

@@ -148,7 +148,7 @@ Respond in this order when designing a feature:
 9. ✅ Quotes (line items, VAT totals, PO-YYYY-NNNN numbering)
 10. ✅ Orders (quote conversion, production pipeline, OBJ-YYYY-NNNN)
 11. ✅ AI chat over company data (`ai-chat` edge function with tool use)
-12. Analytics and reporting
+12. ✅ Analytics (inquiry volume, quote conversion, order value)
 
 AI features require the `ANTHROPIC_API_KEY` secret on the Supabase project
 (Dashboard → Edge Functions → Secrets). Without it the app works, with AI
