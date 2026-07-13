@@ -40,11 +40,31 @@ Open [http://localhost:3000](http://localhost:3000), create an account at
 `/register` (this provisions your company automatically) and you land on
 the dashboard.
 
+## Modules
+
+- **Inquiries** — incoming customer requests with AI extraction, status
+  pipeline and assignment; fed automatically by the n8n email workflow via
+  the `ingest-inquiry` edge function (per-company ingest token, see
+  Settings)
+- **AI replies** — one-click reply drafts on the inquiry detail
+  (`generate-reply` edge function)
+- **Quotes** — line items, VAT totals, per-company `PO-2026-0001`
+  numbering, created from inquiries
+- **Orders** — one-click conversion from an accepted quote, production
+  status pipeline, delivery dates
+- **Contacts** — customers and partners, auto-created from incoming emails
+- **AI Chat** — ask questions over your own inquiries/quotes/orders/
+  contacts (`ai-chat` edge function; every lookup runs under your RLS
+  session)
+
+AI features need the `ANTHROPIC_API_KEY` secret set on the Supabase
+project (Dashboard → Edge Functions → Secrets).
+
 ## Project structure
 
 ```
 src/app/(auth)/        Public auth pages + server actions
-src/app/(dashboard)/   Authenticated app shell: dashboard, inquiries, contacts
+src/app/(dashboard)/   Authenticated app shell and modules
 src/app/auth/confirm/  Supabase email confirmation handler
 src/components/        Feature components + shadcn/ui primitives
 src/lib/supabase/      Supabase browser/server clients + session proxy

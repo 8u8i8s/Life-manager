@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Package,
   Settings,
+  Sparkles,
   Users,
 } from "lucide-react";
 
@@ -19,6 +20,7 @@ const navItems = [
   { href: "/quotes", label: "Quotes", icon: FileText },
   { href: "/orders", label: "Orders", icon: Package },
   { href: "/contacts", label: "Contacts", icon: Users },
+  { href: "/chat", label: "AI Chat", icon: Sparkles },
   { href: "/settings", label: "Settings", icon: Settings },
 ] as const;
 

@@ -140,14 +140,19 @@ Respond in this order when designing a feature:
 2. ✅ Database model (companies, profiles, contacts, inquiries) with RLS
 3. ✅ Sign in / sign up and permissions (RLS)
 4. ✅ Dashboard with navigation
-5. Inquiries module (CRUD, detail view, assignment)
-6. n8n workflow: email → extraction → Supabase
-7. AI-generated customer replies
-8. CRM
-9. Quotes
-10. Orders
-11. AI chat over company data
+5. ✅ Inquiries module (CRUD, detail view, status, assignment)
+6. ✅ n8n workflow: email → AI extraction → Supabase (`ingest-inquiry`
+   edge function + "PULI OS — Email to Inquiry" n8n workflow)
+7. ✅ AI-generated customer replies (`generate-reply` edge function)
+8. CRM (contacts CRUD exists; pipeline/lead views pending)
+9. ✅ Quotes (line items, VAT totals, PO-YYYY-NNNN numbering)
+10. ✅ Orders (quote conversion, production pipeline, OBJ-YYYY-NNNN)
+11. ✅ AI chat over company data (`ai-chat` edge function with tool use)
 12. Analytics and reporting
+
+AI features require the `ANTHROPIC_API_KEY` secret on the Supabase project
+(Dashboard → Edge Functions → Secrets). Without it the app works, with AI
+extraction skipped and AI endpoints returning a clear configuration error.
 
 Future modules: CRM, lead management, quotes, orders, projects, tasks,
 calendar, inventory, finance, analytics, AI chat, knowledge base, document
