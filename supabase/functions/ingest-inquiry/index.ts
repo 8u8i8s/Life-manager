@@ -196,7 +196,6 @@ Deno.serve(async (req) => {
       const response = await createOpenAIResponse(openAIKey, {
         model: OPENAI_MODEL,
         max_output_tokens: 4096,
-        reasoning: { effort: "low" },
         instructions:
           "You extract structured data from customer inquiries sent to a manufacturer of windows, doors and aluminium systems. Extract only what is actually stated; use null for anything not mentioned.",
         text: {
