@@ -30,7 +30,10 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col gap-1">
+    <nav className="relative flex flex-col gap-1.5">
+      <p className="mb-2 px-3 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-sidebar-foreground/35">
+        Workspace
+      </p>
       {navItems.map(({ href, label, icon: Icon }) => {
         const isActive =
           pathname === href || pathname.startsWith(`${href}/`);
@@ -41,13 +44,25 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             href={href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
               isActive
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-[inset_0_0_0_1px_oklch(1_0_0/0.04)]"
+                : "text-sidebar-foreground/55 hover:bg-white/[0.04] hover:text-sidebar-foreground"
             )}
           >
-            <Icon className="size-4" />
+            {isActive ? (
+              <span className="absolute -left-5 h-6 w-1 rounded-r-full bg-sidebar-primary shadow-[0_0_16px_var(--sidebar-primary)]" />
+            ) : null}
+            <span
+              className={cn(
+                "flex size-8 items-center justify-center rounded-lg transition-colors",
+                isActive
+                  ? "bg-sidebar-primary/15 text-sidebar-primary"
+                  : "bg-transparent text-sidebar-foreground/45 group-hover:text-sidebar-foreground/80"
+              )}
+            >
+              <Icon className="size-4" />
+            </span>
             {label}
           </Link>
         );
