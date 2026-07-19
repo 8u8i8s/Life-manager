@@ -59,7 +59,7 @@ the dashboard.
 
 AI features need the `OPENAI_API_KEY` secret set on the Supabase project
 (Dashboard → Edge Functions → Secrets). The optional `OPENAI_MODEL` secret
-overrides the default `gpt-5.6-sol` model.
+overrides the default `gpt-4.1-mini` model.
 
 After changing the AI provider, deploy the `ai-chat`, `generate-reply` and
 `ingest-inquiry` Edge Functions so they receive the updated code.

@@ -5,6 +5,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
   createOpenAIResponse,
+  getOpenAIErrorMessage,
   getOutputText,
   getRefusal,
   OPENAI_MODEL,
@@ -92,7 +93,6 @@ Deno.serve(async (req) => {
     const response = await createOpenAIResponse(openAIKey, {
       model: OPENAI_MODEL,
       max_output_tokens: 2048,
-      reasoning: { effort: "low" },
       instructions: `You draft professional email replies on behalf of ${companyName}, a manufacturer of windows, doors and aluminium systems. Rules:
 - Reply in the same language the customer wrote in.
 - Greet the customer by name when known.
@@ -125,6 +125,6 @@ Deno.serve(async (req) => {
     return json(200, { ok: true, draft });
   } catch (error) {
     console.error("Reply generation failed:", error);
-    return json(502, { error: "AI request failed. Try again." });
+    return json(502, { error: getOpenAIErrorMessage(error) });
   }
 });

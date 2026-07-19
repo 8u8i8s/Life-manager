@@ -5,6 +5,7 @@
 import { createClient, SupabaseClient } from "npm:@supabase/supabase-js@2";
 import {
   createOpenAIResponse,
+  getOpenAIErrorMessage,
   getOutputText,
   getRefusal,
   OPENAI_MODEL,
@@ -282,7 +283,6 @@ Deno.serve(async (req) => {
       const response = await createOpenAIResponse(openAIKey, {
         model: OPENAI_MODEL,
         max_output_tokens: 4096,
-        reasoning: { effort: "low" },
         instructions:
           "You are the PULI OS assistant for a manufacturer of windows, doors and aluminium systems. Answer questions about the company's inquiries, quotes, orders and contacts using the tools — never invent data. Reply in the language the user writes in. Amounts are in EUR unless stated otherwise. Be concise and lead with the answer.",
         tools: TOOLS,
@@ -330,6 +330,6 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("AI chat failed:", error);
-    return json(502, { error: "AI request failed. Try again." });
+    return json(502, { error: getOpenAIErrorMessage(error) });
   }
 });
