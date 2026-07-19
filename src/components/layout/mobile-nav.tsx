@@ -24,9 +24,17 @@ export function MobileNav() {
           <span className="sr-only">Open menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-4">
-        <SheetHeader className="p-0 pb-4">
-          <SheetTitle>PULI OS</SheetTitle>
+      <SheetContent
+        side="left"
+        className="w-72 border-sidebar-border bg-sidebar p-5 text-sidebar-foreground"
+      >
+        <SheetHeader className="p-0 pb-7">
+          <SheetTitle className="flex items-center gap-3 text-sidebar-foreground">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-sidebar-primary to-violet-400 text-sm font-bold text-sidebar-primary-foreground">
+              P
+            </span>
+            PULI OS
+          </SheetTitle>
         </SheetHeader>
         <SidebarNav onNavigate={() => setOpen(false)} />
       </SheetContent>
