@@ -1,9 +1,14 @@
 // PULI OS — AI customer reply drafts.
 // Called from the dashboard with the signed-in user's JWT; all database
-// access runs through RLS as that user. Requires the ANTHROPIC_API_KEY
-// secret (`supabase secrets set ANTHROPIC_API_KEY=...`).
+// access runs through RLS as that user. Requires the OPENAI_API_KEY
+// secret (`supabase secrets set OPENAI_API_KEY=...`).
 import { createClient } from "npm:@supabase/supabase-js@2";
-import Anthropic from "npm:@anthropic-ai/sdk";
+import {
+  createOpenAIResponse,
+  getOutputText,
+  getRefusal,
+  OPENAI_MODEL,
+} from "../_shared/openai.ts";
 
 function json(status: number, body: Record<string, unknown>): Response {
   return new Response(JSON.stringify(body), {
@@ -60,11 +65,11 @@ Deno.serve(async (req) => {
     return json(404, { error: "Inquiry not found" });
   }
 
-  const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!anthropicKey) {
+  const openAIKey = Deno.env.get("OPENAI_API_KEY");
+  if (!openAIKey) {
     return json(503, {
       error:
-        "AI is not configured. Set the ANTHROPIC_API_KEY secret on your Supabase project (Dashboard → Edge Functions → Secrets).",
+        "AI is not configured. Set the OPENAI_API_KEY secret on your Supabase project (Dashboard → Edge Functions → Secrets).",
     });
   }
 
@@ -84,11 +89,11 @@ Deno.serve(async (req) => {
     .join("\n\n");
 
   try {
-    const anthropic = new Anthropic({ apiKey: anthropicKey });
-    const response = await anthropic.messages.create({
-      model: "claude-opus-4-8",
-      max_tokens: 2048,
-      system: `You draft professional email replies on behalf of ${companyName}, a manufacturer of windows, doors and aluminium systems. Rules:
+    const response = await createOpenAIResponse(openAIKey, {
+      model: OPENAI_MODEL,
+      max_output_tokens: 2048,
+      reasoning: { effort: "low" },
+      instructions: `You draft professional email replies on behalf of ${companyName}, a manufacturer of windows, doors and aluminium systems. Rules:
 - Reply in the same language the customer wrote in.
 - Greet the customer by name when known.
 - Confirm what they asked for, referencing the extracted details.
@@ -96,15 +101,14 @@ Deno.serve(async (req) => {
 - Never invent prices, delivery dates or commitments.
 - Close politely on behalf of ${companyName}.
 - Output only the email body text — no subject line, no commentary.`,
-      messages: [{ role: "user", content: context }],
+      input: context,
     });
 
-    if (response.stop_reason === "refusal") {
+    if (getRefusal(response)) {
       return json(502, { error: "The AI declined to draft this reply." });
     }
 
-    const textBlock = response.content.find((block) => block.type === "text");
-    const draft = textBlock && textBlock.type === "text" ? textBlock.text : "";
+    const draft = getOutputText(response);
     if (!draft) {
       return json(502, { error: "The AI returned an empty draft." });
     }
