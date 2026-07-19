@@ -1,9 +1,13 @@
 // PULI OS — inbound inquiry ingestion.
 // Called by automation (n8n) with a per-company ingest token. Upserts the
-// contact, stores the inquiry and runs AI extraction when an Anthropic API
-// key is configured (`supabase secrets set ANTHROPIC_API_KEY=...`).
+// contact, stores the inquiry and runs AI extraction when an OpenAI API
+// key is configured (`supabase secrets set OPENAI_API_KEY=...`).
 import { createClient } from "npm:@supabase/supabase-js@2";
-import Anthropic from "npm:@anthropic-ai/sdk";
+import {
+  createOpenAIResponse,
+  getOutputText,
+  OPENAI_MODEL,
+} from "../_shared/openai.ts";
 
 type IngestPayload = {
   from_email?: string;
@@ -16,7 +20,18 @@ type IngestPayload = {
 const EXTRACTION_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["summary", "language", "items"],
+  required: [
+    "summary",
+    "language",
+    "customer_name",
+    "customer_phone",
+    "customer_organization",
+    "product_type",
+    "location",
+    "deadline",
+    "items",
+    "missing_information",
+  ],
   properties: {
     summary: {
       type: "string",
@@ -48,7 +63,7 @@ const EXTRACTION_SCHEMA = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["description", "quantity"],
+        required: ["description", "quantity", "width_mm", "height_mm"],
         properties: {
           description: { type: "string" },
           quantity: { type: ["integer", "null"] },
@@ -175,45 +190,38 @@ Deno.serve(async (req) => {
   // AI extraction — optional: the inquiry is already stored; extraction
   // failures must never lose the email.
   let extracted = false;
-  const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
-  if (anthropicKey && body) {
+  const openAIKey = Deno.env.get("OPENAI_API_KEY");
+  if (openAIKey && body) {
     try {
-      const anthropic = new Anthropic({ apiKey: anthropicKey });
-      const response = await anthropic.messages.create({
-        model: "claude-opus-4-8",
-        max_tokens: 4096,
-        system:
+      const response = await createOpenAIResponse(openAIKey, {
+        model: OPENAI_MODEL,
+        max_output_tokens: 4096,
+        reasoning: { effort: "low" },
+        instructions:
           "You extract structured data from customer inquiries sent to a manufacturer of windows, doors and aluminium systems. Extract only what is actually stated; use null for anything not mentioned.",
-        output_config: {
+        text: {
           format: {
             type: "json_schema",
+            name: "inquiry_extraction",
+            strict: true,
             schema: EXTRACTION_SCHEMA,
           },
         },
-        messages: [
-          {
-            role: "user",
-            content: `Subject: ${subject}\n\nEmail body:\n${body}`,
-          },
-        ],
+        input: `Subject: ${subject}\n\nEmail body:\n${body}`,
       });
 
-      if (response.stop_reason !== "refusal") {
-        const textBlock = response.content.find(
-          (block) => block.type === "text"
-        );
-        if (textBlock && textBlock.type === "text") {
-          const data = JSON.parse(textBlock.text);
-          const { error: updateError } = await supabase
-            .from("inquiries")
-            .update({
-              extracted_data: data,
-              ai_summary: data.summary ?? null,
-              status: "extracted",
-            })
-            .eq("id", inquiry.id);
-          extracted = !updateError;
-        }
+      const output = getOutputText(response);
+      if (output) {
+        const data = JSON.parse(output);
+        const { error: updateError } = await supabase
+          .from("inquiries")
+          .update({
+            extracted_data: data,
+            ai_summary: data.summary ?? null,
+            status: "extracted",
+          })
+          .eq("id", inquiry.id);
+        extracted = !updateError;
       }
     } catch (error) {
       console.error("AI extraction failed:", error);

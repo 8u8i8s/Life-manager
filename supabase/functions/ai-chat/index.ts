@@ -1,9 +1,14 @@
 // PULI OS — AI chat over company data.
 // Runs under the caller's JWT: every tool query goes through RLS, so the
 // assistant can only ever see the caller's own company. Requires the
-// ANTHROPIC_API_KEY secret.
+// OPENAI_API_KEY secret.
 import { createClient, SupabaseClient } from "npm:@supabase/supabase-js@2";
-import Anthropic from "npm:@anthropic-ai/sdk";
+import {
+  createOpenAIResponse,
+  getOutputText,
+  getRefusal,
+  OPENAI_MODEL,
+} from "../_shared/openai.ts";
 
 const MAX_TOOL_ITERATIONS = 6;
 
@@ -15,12 +20,13 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const TOOLS: Anthropic.Tool[] = [
+const TOOLS = [
   {
+    type: "function",
     name: "search_inquiries",
     description:
       "Search the company's customer inquiries. Call this when the question concerns inquiries, dopyty, incoming emails or customer requests.",
-    input_schema: {
+    parameters: {
       type: "object",
       additionalProperties: false,
       properties: {
@@ -38,10 +44,11 @@ const TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    type: "function",
     name: "search_quotes",
     description:
       "Search the company's price quotes (cenové ponuky) including item totals.",
-    input_schema: {
+    parameters: {
       type: "object",
       additionalProperties: false,
       properties: {
@@ -55,10 +62,11 @@ const TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    type: "function",
     name: "search_orders",
     description:
       "Search the company's orders (objednávky) with totals and delivery dates.",
-    input_schema: {
+    parameters: {
       type: "object",
       additionalProperties: false,
       properties: {
@@ -72,9 +80,10 @@ const TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    type: "function",
     name: "search_contacts",
     description: "Search the company's contacts (customers and partners).",
-    input_schema: {
+    parameters: {
       type: "object",
       additionalProperties: false,
       properties: {
@@ -88,10 +97,11 @@ const TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    type: "function",
     name: "get_company_stats",
     description:
       "Get aggregate counts: inquiries, quotes and orders per status, and total contacts. Call this for overview or 'how many' questions.",
-    input_schema: {
+    parameters: {
       type: "object",
       additionalProperties: false,
       properties: {},
@@ -233,11 +243,11 @@ Deno.serve(async (req) => {
     return json(401, { error: "Invalid or expired session" });
   }
 
-  const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!anthropicKey) {
+  const openAIKey = Deno.env.get("OPENAI_API_KEY");
+  if (!openAIKey) {
     return json(503, {
       error:
-        "AI is not configured. Set the ANTHROPIC_API_KEY secret on your Supabase project (Dashboard → Edge Functions → Secrets).",
+        "AI is not configured. Set the OPENAI_API_KEY secret on your Supabase project (Dashboard → Edge Functions → Secrets).",
     });
   }
 
@@ -261,52 +271,57 @@ Deno.serve(async (req) => {
     return json(400, { error: "messages must end with a user message" });
   }
 
-  const anthropic = new Anthropic({ apiKey: anthropicKey });
-  const messages: Anthropic.MessageParam[] = history.map((message) => ({
-    role: message.role as "user" | "assistant",
+  const input: Array<Record<string, unknown>> = history.map((message) => ({
+    type: "message",
+    role: message.role,
     content: message.content,
   }));
 
   try {
     for (let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
-      const response = await anthropic.messages.create({
-        model: "claude-opus-4-8",
-        max_tokens: 4096,
-        system:
+      const response = await createOpenAIResponse(openAIKey, {
+        model: OPENAI_MODEL,
+        max_output_tokens: 4096,
+        reasoning: { effort: "low" },
+        instructions:
           "You are the PULI OS assistant for a manufacturer of windows, doors and aluminium systems. Answer questions about the company's inquiries, quotes, orders and contacts using the tools — never invent data. Reply in the language the user writes in. Amounts are in EUR unless stated otherwise. Be concise and lead with the answer.",
         tools: TOOLS,
-        messages,
+        input,
       });
 
-      if (response.stop_reason === "refusal") {
+      if (getRefusal(response)) {
         return json(200, { reply: "I can't help with that request." });
       }
 
-      if (response.stop_reason !== "tool_use") {
-        const text = response.content
-          .filter((block) => block.type === "text")
-          .map((block) => (block as Anthropic.TextBlock).text)
-          .join("\n");
+      const toolCalls = response.output.filter(
+        (item) => item.type === "function_call"
+      );
+      if (toolCalls.length === 0) {
+        const text = getOutputText(response);
+        if (!text) {
+          return json(502, { error: "The AI returned an empty response." });
+        }
         return json(200, { reply: text });
       }
 
-      messages.push({ role: "assistant", content: response.content });
-      const toolResults: Anthropic.ToolResultBlockParam[] = [];
-      for (const block of response.content) {
-        if (block.type === "tool_use") {
-          const result = await runTool(
-            supabase,
-            block.name,
-            block.input as Record<string, unknown>
-          );
-          toolResults.push({
-            type: "tool_result",
-            tool_use_id: block.id,
-            content: result,
-          });
+      input.push(...response.output);
+      for (const call of toolCalls) {
+        if (!call.name || !call.call_id) continue;
+
+        let args: Record<string, unknown> = {};
+        try {
+          args = JSON.parse(call.arguments ?? "{}") as Record<string, unknown>;
+        } catch {
+          args = {};
         }
+
+        const result = await runTool(supabase, call.name, args);
+        input.push({
+          type: "function_call_output",
+          call_id: call.call_id,
+          output: result,
+        });
       }
-      messages.push({ role: "user", content: toolResults });
     }
 
     return json(200, {

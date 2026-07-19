@@ -11,7 +11,7 @@ managed from this dashboard.
 - Tailwind CSS + [shadcn/ui](https://ui.shadcn.com)
 - [Supabase](https://supabase.com) — PostgreSQL, Auth, Storage, Edge Functions
 - [n8n](https://n8n.io) — automation
-- Anthropic / OpenAI APIs — extraction and reply generation
+- OpenAI Responses API — extraction, reply generation and AI chat
 - Vercel — hosting
 
 ## Getting started
@@ -57,8 +57,12 @@ the dashboard.
   contacts (`ai-chat` edge function; every lookup runs under your RLS
   session)
 
-AI features need the `ANTHROPIC_API_KEY` secret set on the Supabase
-project (Dashboard → Edge Functions → Secrets).
+AI features need the `OPENAI_API_KEY` secret set on the Supabase project
+(Dashboard → Edge Functions → Secrets). The optional `OPENAI_MODEL` secret
+overrides the default `gpt-5.6-sol` model.
+
+After changing the AI provider, deploy the `ai-chat`, `generate-reply` and
+`ingest-inquiry` Edge Functions so they receive the updated code.
 
 ## Project structure
 

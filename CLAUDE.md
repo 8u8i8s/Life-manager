@@ -23,7 +23,7 @@ Core pipeline: Email → n8n → AI Extraction → Supabase → Dashboard → AI
 - **Frontend:** Next.js (App Router), React, TypeScript, Tailwind CSS, shadcn/ui
 - **Backend:** Supabase (PostgreSQL, Auth, Storage, Edge Functions)
 - **Automation:** n8n
-- **AI:** Anthropic API, OpenAI API
+- **AI:** OpenAI Responses API
 - **Hosting:** Vercel
 - **Version control:** GitHub
 - **Package manager:** pnpm
@@ -150,7 +150,7 @@ Respond in this order when designing a feature:
 11. ✅ AI chat over company data (`ai-chat` edge function with tool use)
 12. ✅ Analytics (inquiry volume, quote conversion, order value)
 
-AI features require the `ANTHROPIC_API_KEY` secret on the Supabase project
+AI features require the `OPENAI_API_KEY` secret on the Supabase project
 (Dashboard → Edge Functions → Secrets). Without it the app works, with AI
 extraction skipped and AI endpoints returning a clear configuration error.
 
